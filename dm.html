@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WILA DM Code Scanner</title>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body>
+  <h1>Scan WILA DM Code</h1>
+  <video id="video" width="300" height="200" style="border: 1px solid black;"></video>
+  <p id="result">Scan a code to search on WILA</p>
+
+  <script>
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+
+    codeReader
+      .listVideoInputDevices()
+      .then(videoInputDevices => {
+        const firstDeviceId = videoInputDevices[0].deviceId;
+        return codeReader.decodeFromVideoDevice(firstDeviceId, videoElement, (result, err) => {
+          if (result) {
+            const code = encodeURIComponent(result.text);
+            resultElement.textContent = `Code: ${result.text}`;
+            window.location.href = `https://www.wilatooling.com/search/?s=${code}`;
+          }
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        resultElement.textContent = 'Error accessing camera or scanning code.';
+      });
+  </script>
+</body>
+</html>
