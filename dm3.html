@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WILA DM Code Scanner</title>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: conic-gradient(#000C14, #0081E0, #000C14);
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      border: 1px solid white;
+      border-radius: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0081E0;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00587c;
+    }
+    @media (max-width: 600px) {
+      .container {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        padding: 10px;
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scan WILA DM Code</h1>
+    <video id="video"></video>
+    <p id="result">Scan a code to search on WILA</p>
+    <button id="switch-camera">Switch Camera</button>
+  </div>
+
+  <script>
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+    const switchCameraButton = document.getElementById('switch-camera');
+    let selectedDeviceId = null;
+    let videoInputDevices = [];
+
+    codeReader
+      .listVideoInputDevices()
+      .then(devices => {
+        videoInputDevices = devices;
+        if (videoInputDevices.length > 0) {
+          selectedDeviceId = videoInputDevices[0].deviceId;
+          startScanner();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        resultElement.textContent = 'Error accessing camera or scanning code.';
+      });
+
+    function startScanner() {
+      codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+        if (result) {
+          const code = encodeURIComponent(result.text);
+          resultElement.textContent = `Code: ${result.text}`;
+          window.location.href = `https://www.wilatooling.com/search/?s=${code}`;
+        }
+      });
+    }
+
+    switchCameraButton.addEventListener('click', () => {
+      if (videoInputDevices.length > 1) {
+        const currentIndex = videoInputDevices.findIndex(device => device.deviceId === selectedDeviceId);
+        const nextIndex = (currentIndex + 1) % videoInputDevices.length;
+        selectedDeviceId = videoInputDevices[nextIndex].deviceId;
+        codeReader.reset();
+        startScanner();
+      }
+    });
+  </script>
+</body>
+</html>
