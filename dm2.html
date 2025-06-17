@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WILA DM Code Scanner</title>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: conic-gradient(#000C14, #0081E0, #000C14);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .container {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    video {
+      border: 1px solid white;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scan WILA DM Code</h1>
+    <video id="video" width="300" height="200"></video>
+    <p id="result">Scan a code to search on WILA</p>
+  </div>
+
+  <script>
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+
+    codeReader
+      .listVideoInputDevices()
+      .then(videoInputDevices => {
+        const firstDeviceId = videoInputDevices[0].deviceId;
+        return codeReader.decodeFromVideoDevice(firstDeviceId, videoElement, (result, err) => {
+          if (result) {
+            const code = encodeURIComponent(result.text);
+            resultElement.textContent = `Code: ${result.text}`;
+            window.location.href = `https://www.wilatooling.com/search/?s=${code}`;
+          }
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        resultElement.textContent = 'Error accessing camera or scanning code.';
+      });
+  </script>
+</body>
+</html>
